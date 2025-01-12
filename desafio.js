@@ -1,5 +1,6 @@
 
 const fs = require('fs').promises;
+
 const ESTADOS_DISTRIBUIDORA = [
     { estado: 'SP', valor: 67836.43 },
     { estado: 'RJ', valor: 36678.66 },
@@ -8,10 +9,24 @@ const ESTADOS_DISTRIBUIDORA = [
     { estado: 'Outros', valor: 19849.53 }
 ]
 
-calcularSoma(13);
-console.log(verificarNumeroNaFibonacci(16));
-analisarFaturamento()
-console.log(calculaPercentualRepresentacaoPorEstado())
+async function main() {
+    console.log('1) Cálculo soma')
+    console.log(calcularSoma(13));
+
+    console.log('2) Verificar número na sequência de Fibonacci')
+    console.log(verificarNumeroNaFibonacci(16));
+
+    console.log('3) Análise de faturamento')
+    await analisarFaturamento()
+
+    console.log('4) Calcular percentual de representacao por estado')
+    console.log(calculaPercentualRepresentacaoPorEstado())
+
+    console.log('5) Inverter string')
+    console.log(inverterString('Eu sou um teste'))
+}
+
+
 
 function gerarSequenciaFibonacci(limite, sequencia = [0, 1]) {
     const proximo = sequencia[sequencia.length - 1] + sequencia[sequencia.length - 2];
@@ -37,10 +52,8 @@ function verificarNumeroNaFibonacci(numero) {
 }
 
 function calcularSoma(indice, k = 0, soma = 0) {
-    if (k >= indice) {
-        console.log(`A soma dos números de 1 a ${indice} é ${soma}`);
-        return
-    }
+    if (k >= indice)
+        return `A soma dos números de 1 a ${indice} é ${soma}`;
 
     return calcularSoma(indice, k + 1, soma + (k + 1));
 }
@@ -126,3 +139,20 @@ function calculaPercentualRepresentacaoPorEstado() {
         percentual: (estado.valor / total) * 100
     }));
 }
+
+
+function inverterString(valor) {
+    let resultado = '';
+    for (let i = 0; i < valor.length; i++) {
+        resultado = valor[i] + resultado;
+    }
+
+
+    return resultado
+}
+
+
+
+
+
+main()
