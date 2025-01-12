@@ -1,3 +1,18 @@
+
+const fs = require('fs').promises;
+const ESTADOS_DISTRIBUIDORA = [
+    { estado: 'SP', valor: 67836.43 },
+    { estado: 'RJ', valor: 36678.66 },
+    { estado: 'MG', valor: 29229.88 },
+    { estado: 'ES', valor: 27165.48 },
+    { estado: 'Outros', valor: 19849.53 }
+]
+
+calcularSoma(13);
+console.log(verificarNumeroNaFibonacci(16));
+analisarFaturamento()
+console.log(calculaPercentualRepresentacaoPorEstado())
+
 function gerarSequenciaFibonacci(limite, sequencia = [0, 1]) {
     const proximo = sequencia[sequencia.length - 1] + sequencia[sequencia.length - 2];
 
@@ -21,8 +36,6 @@ function verificarNumeroNaFibonacci(numero) {
     return `O número ${numero} NÃO pertence à sequência de Fibonacci.`;
 }
 
-console.log(verificarNumeroNaFibonacci(16));
-
 function calcularSoma(indice, k = 0, soma = 0) {
     if (k >= indice) {
         console.log(`A soma dos números de 1 a ${indice} é ${soma}`);
@@ -31,11 +44,6 @@ function calcularSoma(indice, k = 0, soma = 0) {
 
     return calcularSoma(indice, k + 1, soma + (k + 1));
 }
-
-calcularSoma(13); // 91
-
-
-const fs = require('fs').promises;
 
 async function lerJSON() {
     try {
@@ -47,9 +55,12 @@ async function lerJSON() {
     }
 }
 
+async function diasConsideradosCalculo(dados) {
+    return dados.filter(dado => dado.valor > 0);
+}
 
 async function analisarFaturamento() {
-    const dados = await lerJSON();
+    const dados = await diasConsideradosCalculo(await lerJSON());
     if (!dados) {
         console.log('Erro ao ler o arquivo de dados json');
         return;
@@ -57,22 +68,36 @@ async function analisarFaturamento() {
 
     const diaDeMenorValorFaturado = obterDiaComMenorValorFaturamento(dados);
     const diaDeMaiorValorFaturado = obterDiaComMaiorValorFaturamento(dados);
+    const diasAcimaDaMedia = obterDiasComValorAcimaDaMediaDeFaturamento(dados);
 
     console.log(`O menor valor de faturamento ocorrido em um dia do mês foi de R$ ${diaDeMenorValorFaturado.valor} no dia ${diaDeMenorValorFaturado.dia}`);
     console.log(`O maior valor de faturamento ocorrido em um dia do mês foi de R$ ${diaDeMaiorValorFaturado.valor} no dia ${diaDeMaiorValorFaturado.dia}`);
+    console.log(`A média de faturamento dos dias considerados foi de R$ ${calcularMedia(dados)}`);
+    console.log('Dias com valor de faturamento acima da média:', diasAcimaDaMedia);
 }
 
-analisarFaturamento()
+function calcularMedia(dados) {
+    const total = dados.reduce((acc, value) => acc + value.valor, 0);
+    return total / dados.length;
+}
 
-function obterDiaComMenorValorFaturamento(dados) { 
+function obterDiasComValorAcimaDaMediaDeFaturamento(dados) {
+    const media = calcularMedia(dados);
+
     return dados.reduce((acc, value) => {
-        if(acc === null)
+        if (value.valor > media)
+            return [...acc, value];
+
+        return acc;
+    }, []);
+}
+
+function obterDiaComMenorValorFaturamento(dados) {
+    return dados.reduce((acc, value) => {
+        if (acc === null)
             return value;
 
-        if(value.valor === 0)
-            return acc;
-
-        if (value.valor < acc.valor )
+        if (value.valor < acc.valor)
             return value;
 
         return acc;
@@ -80,19 +105,24 @@ function obterDiaComMenorValorFaturamento(dados) {
     }, null);
 }
 
-
-function obterDiaComMaiorValorFaturamento(dados) { 
+function obterDiaComMaiorValorFaturamento(dados) {
     return dados.reduce((acc, value) => {
-        if(acc === null)
+        if (acc === null)
             return value;
 
-        if(value.valor === 0)
-            return acc;
-
-        if (value.valor > acc.valor )
+        if (value.valor > acc.valor)
             return value;
 
         return acc;
 
     }, null);
+}
+
+function calculaPercentualRepresentacaoPorEstado() {
+    const total = ESTADOS_DISTRIBUIDORA.reduce((acc, value) => acc + value.valor, 0);
+
+    return ESTADOS_DISTRIBUIDORA.map(estado => ({
+        estado: estado.estado,
+        percentual: (estado.valor / total) * 100
+    }));
 }
